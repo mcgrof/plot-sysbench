@@ -46,6 +46,34 @@ We start plot at the first TPS value on the y axis.
 
 <img src="a_vs_b_zoomed_in.png" align=center alt="a Vs b TPS">
 
+# Preconditioning
+
+There are two parts to pre-conditioning:
+
+  * pre-fill the drive
+  * steady state detection
+
+Use:
+
+```bash
+# We pre-fill twice
+./ss/pre-fill.sh /dev/nvme0n1
+./ss/pre-fill.sh /dev/nvme0n1
+
+# First steady state for IOPS
+fio --warnings-fatal --output=ss_iops.json --output-format=json+ ss/0001-fio_ss_generic-random-iops.ini
+
+# Second seteady state, now for throughput
+fio --warnings-fatal --output=ss_iops.json --output-format=json+ ss/0002-fio_ss_generic-random-bw.ini
+
+# XXX: fio needs latency steady-state
+```
+
+You may just want to change the minutes for hours. There's a work in progress
+plot of the steady state output files there. Note that if you use runtime=6h
+and ss_dur=4h it means that we can bail early if steady state is attained
+before 6 hours. The 6 hours would be the upper bound.
+
 License
 -------
 

@@ -9,7 +9,10 @@ BS=131072
 QD=129
 
 if [[ -f /sys/block/$DRIVE_NAME/queue/optimal_io_size ]]; then
-	BS=$(cat /sys/block/$DRIVE_NAME/queue/optimal_io_size)
+	BS_VALUE$(cat /sys/block/$DRIVE_NAME/queue/optimal_io_size)
+	if [[ $BS_VALUE -ne 0 ]]; then
+		BS=$(cat /sys/block/$DRIVE_NAME/queue/optimal_io_size)
+	fi
 fi
 
 if [[ -f /sys/block/$DRIVE_NAME/device/queue_count ]]; then

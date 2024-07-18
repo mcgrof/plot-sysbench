@@ -1,9 +1,19 @@
 #!/usr/bin/python3
+import argparse
+import re
 import json
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+
+# Parse optional max values from command line arguments
+parser = argparse.ArgumentParser(description='Plot FIO Steady-State Data')
+parser.add_argument('--title-prefix', type=str, default='', help='Prefix for the title of the graph')
+parser.add_argument('--iops-max', type=float, default=None, help='Maximum value for IOPS y-axis')
+parser.add_argument('--bw-max', type=str, default=None, help='Maximum value for Bandwidth y-axis (e.g., 1.8GB/s, 8MB/s, 400KB/s, 500B/s')
+
+args = parser.parse_args()
 
 # Load the fio JSON output
 files = ['ss_iops.json', 'ss_bw.json']
@@ -121,9 +131,18 @@ ax1.set_ylabel('IOPS', color='white')
 ax1.tick_params(axis='y', labelcolor='white')
 ax1.tick_params(axis='x', labelcolor='white')
 ax1.grid(True, color='gray')
+ax1.set_ylim(bottom=0)  # Ensure the left y-axis starts from 0
+if args.iops_max:
+    ax1.set_ylim(top=args.iops_max)  # Set the maximum value for the left y-axis if provided
 
-#    ax2.plot(df_bw_mean[f'Time ({time_unit})'], df_bw_mean['Mean Bandwidth (KB/s)'], 'o', markersize=0.5, color='red', label='Mean Bandwidth (KB/s) (ss_iops)', alpha=0.6)
-#    ax2.plot(df_bw_slope[f'Time ({time_unit})'], df_bw_slope['Slope Bandwidth (KB/s)'], '--', markersize=2, color=colors['light_green'], label='Slope Bandwidth (KB/s) (ss_iops)', alpha=0.4)
+# parse shorthand bandwidth values
+def parse_shorthand_bandwidth(value):
+    units = {"B/s": 1, "KB/s": 1e3, "MB/s": 1e6, "GB/s": 1e9}
+    match = re.match(r"([0-9.]+)([a-zA-Z/]+)", value)
+    if match:
+        num, unit = match.groups()
+        return float(num) * units[unit]
+    return float(value)  # Default to B/s if no unit is specified
 
 # Instantiate a second y-axis to plot bandwidth
 ax2 = ax1.twinx()
@@ -139,6 +158,11 @@ if 'Slope Bandwidth (KB/s) (BW)' in df_bw_slope:
 ax2.set_ylabel('Bandwidth', color='white')
 ax2.tick_params(axis='y', labelcolor='white')
 ax2.yaxis.set_major_formatter(FuncFormatter(human_readable_bandwidth))
+ax2.set_ylim(bottom=0)  # Ensure the right y-axis starts from 0
+if args.bw_max:
+    bw_max = parse_shorthand_bandwidth(args.bw_max)
+    ax2.set_ylim(top=bw_max)  # Set the maximum value for the right y-axis if provided
+
 
 # Add legends
 fig.tight_layout(rect=[0, 0, 1, 1])  # Adjust the right margin to make more space for the legend
@@ -150,6 +174,6 @@ for text in legend.get_texts():
 legend.get_frame().set_facecolor('black')
 fig.tight_layout(pad=2.0)  # Add padding to ensure the title is not cut off
 
-plt.title('Steady-State IOPS and Bandwidth Over Time', color='white')
+plt.title(f'{args.title_prefix} Steady-State IOPS and Bandwidth Over Time', color='white')
 plt.savefig('steady_state_iops_bw.png', facecolor=fig.get_facecolor())
 plt.show()

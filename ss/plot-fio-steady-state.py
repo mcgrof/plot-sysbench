@@ -113,7 +113,7 @@ colors = {
 }
 
 # Plot the data
-fig, ax1 = plt.subplots(figsize=(14, 8))  # Increased the figure size
+fig, ax1 = plt.subplots(figsize=(28, 16))  # Increased the figure size
 fig.patch.set_facecolor('black')  # Set the background color to black
 ax1.set_facecolor('black')  # Set the plot background color to black
 

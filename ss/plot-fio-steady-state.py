@@ -1,54 +1,155 @@
 #!/usr/bin/python3
-
 import json
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 # Load the fio JSON output
-with open('ss_iops.json', 'r') as file:
-    iops_data = json.load(file)
+files = ['ss_iops.json', 'ss_bw.json']
+data = {}
 
-# Extract the number of entries dynamically
-num_entries = len(iops_data['jobs'][0]['steadystate']['data']['iops'])
+for file in files:
+    if os.path.exists(file):
+        with open(file, 'r') as f:
+            data[file] = json.load(f)
+
+if not data:
+    raise FileNotFoundError("No valid JSON files found. Please provide at least one of 'ss_iops.json' or 'ss_bw.json' or both.")
+
+# Function to adjust the length of lists
+def adjust_length(data_list, target_length):
+    current_length = len(data_list)
+    if current_length < target_length:
+        data_list.extend([None] * (target_length - current_length))
+    else:
+        data_list = data_list[:target_length]
+    return data_list
+
+# Extract the number of entries dynamically for each job
+num_entries_job0 = max(len(data[file]['jobs'][0]['steadystate']['data']['iops']) for file in data)
+num_entries_job1 = max(len(data[file]['jobs'][1]['steadystate']['data']['iops']) for file in data)
 
 # Initialize lists to store the data
-time_data = list(range(1, num_entries + 1))
+time_data_job0 = list(range(1, num_entries_job0 + 1))
+time_data_job1 = list(range(1, num_entries_job1 + 1))
 
-# Extract IOPS and bandwidth data for both jobs
-iops_mean_data = iops_data['jobs'][0]['steadystate']['data']['iops']
-bw_mean_data = iops_data['jobs'][0]['steadystate']['data']['bw']
-iops_slope_data = iops_data['jobs'][1]['steadystate']['data']['iops']
-bw_slope_data = iops_data['jobs'][1]['steadystate']['data']['bw']
+# Determine the appropriate time unit
+max_time = max(max(time_data_job0), max(time_data_job1))
+if max_time >= 3600:
+    time_unit = 'hours'
+    time_factor = 3600
+elif max_time >= 60:
+    time_unit = 'minutes'
+    time_factor = 60
+else:
+    time_unit = 'seconds'
+    time_factor = 1
 
-# Create DataFrames
-df_iops_mean = pd.DataFrame({'Time (seconds)': time_data, 'Mean IOPS': iops_mean_data})
-df_bw_mean = pd.DataFrame({'Time (seconds)': time_data, 'Mean Bandwidth (KB/s)': bw_mean_data})
-df_iops_slope = pd.DataFrame({'Time (seconds)': time_data, 'Slope IOPS': iops_slope_data})
-df_bw_slope = pd.DataFrame({'Time (seconds)': time_data, 'Slope Bandwidth (KB/s)': bw_slope_data})
+# Adjust the time data according to the chosen time unit
+time_data_job0 = [t / time_factor for t in time_data_job0]
+time_data_job1 = [t / time_factor for t in time_data_job1]
+
+# Initialize DataFrames
+df_iops_mean = pd.DataFrame({f'Time ({time_unit})': time_data_job0})
+df_bw_mean = pd.DataFrame({f'Time ({time_unit})': time_data_job0})
+df_iops_slope = pd.DataFrame({f'Time ({time_unit})': time_data_job1})
+df_bw_slope = pd.DataFrame({f'Time ({time_unit})': time_data_job1})
+
+# Populate DataFrames if corresponding files are found
+if 'ss_iops.json' in data:
+    iops_data = data['ss_iops.json']
+    df_iops_mean['Mean IOPS'] = adjust_length(iops_data['jobs'][0]['steadystate']['data']['iops'], num_entries_job0)
+    df_bw_mean['Mean Bandwidth (KB/s)'] = adjust_length(iops_data['jobs'][0]['steadystate']['data']['bw'], num_entries_job0)
+    df_iops_slope['Slope IOPS'] = adjust_length(iops_data['jobs'][1]['steadystate']['data']['iops'], num_entries_job1)
+    df_bw_slope['Slope Bandwidth (KB/s)'] = adjust_length(iops_data['jobs'][1]['steadystate']['data']['bw'], num_entries_job1)
+
+if 'ss_bw.json' in data:
+    bw_data = data['ss_bw.json']
+    df_iops_mean['Mean IOPS (BW)'] = adjust_length(bw_data['jobs'][0]['steadystate']['data']['iops'], num_entries_job0)
+    df_bw_mean['Mean Bandwidth (KB/s) (BW)'] = adjust_length(bw_data['jobs'][0]['steadystate']['data']['bw'], num_entries_job0)
+    df_iops_slope['Slope IOPS (BW)'] = adjust_length(bw_data['jobs'][1]['steadystate']['data']['iops'], num_entries_job1)
+    df_bw_slope['Slope Bandwidth (KB/s) (BW)'] = adjust_length(bw_data['jobs'][1]['steadystate']['data']['bw'], num_entries_job1)
+
+# Function to format bandwidth values
+def human_readable_bandwidth(x, pos):
+    if x >= 1e9:
+        return f'{x*1e-9:.1f} GB/s'
+    elif x >= 1e6:
+        return f'{x*1e-6:.1f} MB/s'
+    elif x >= 1e3:
+        return f'{x*1e-3:.1f} KB/s'
+    else:
+        return f'{x:.1f} B/s'
+
+# Our color palette
+colors = {
+    'red': '#FF0000',  # Red
+    'green': '#00FF00',  # Green
+    'blue': '#0000FF',  # Blue
+    'pink': '#FFC0CB',  # Pink
+    'yellow': '#FFFF00',  # Yellow
+    'light_red': '#DFE3E8',  # Light Gray
+    'light_yellow': '#1428A0',  # Blue
+    'purple': '#1428A0',  # Purpelish
+    'cyan': '#00FFFF',  # Cyan
+    'light_blue': '#76C7C0', # Light Blue
+    'light_green': '#90EE90', # Light Green
+    'grey': '#808080', # Grey
+    'light_grey': '#D3D3D3', # Light Grey
+    'contrast_red': '#E4002B',  # Contrasting Red
+    'contrast_yellow': '#FFC72C',  # Contrasting Yellow
+    'contrast_blue': '#0057B8',  # Contrasting Blue
+}
 
 # Plot the data
-fig, ax1 = plt.subplots(figsize=(12, 6))
+fig, ax1 = plt.subplots(figsize=(14, 8))  # Increased the figure size
+fig.patch.set_facecolor('black')  # Set the background color to black
+ax1.set_facecolor('black')  # Set the plot background color to black
 
 # Plot IOPS on the left y-axis
-ax1.plot(df_iops_mean['Time (seconds)'], df_iops_mean['Mean IOPS'], 'g-', label='Mean IOPS')
-ax1.plot(df_iops_slope['Time (seconds)'], df_iops_slope['Slope IOPS'], 'g--', label='Slope IOPS')
-ax1.set_xlabel('Time (seconds)')
-ax1.set_ylabel('IOPS', color='g')
-ax1.tick_params(axis='y', labelcolor='g')
-ax1.grid(True)
+if 'Mean IOPS' in df_iops_mean:
+    ax1.plot(df_iops_mean[f'Time ({time_unit})'], df_iops_mean['Mean IOPS'], 'o', markersize=2, color=colors['red'], label='Mean IOPS (ss_iops)', alpha=0.6)
+if 'Slope IOPS' in df_iops_slope:
+    ax1.plot(df_iops_slope[f'Time ({time_unit})'], df_iops_slope['Slope IOPS'], 'o', markersize=1, color=colors['contrast_yellow'], label='Slope IOPS (ss_iops)', alpha=0.4)
+if 'Mean IOPS (BW)' in df_iops_mean:
+    ax1.plot(df_iops_mean[f'Time ({time_unit})'], df_iops_mean['Mean IOPS (BW)'], 'o', markersize=2, color=colors['green'], label='Mean IOPS (ss_bw)', alpha=0.6)
+if 'Slope IOPS (BW)' in df_iops_slope:
+    ax1.plot(df_iops_slope[f'Time ({time_unit})'], df_iops_slope['Slope IOPS (BW)'], 'o', markersize=1, color=colors['yellow'], label='Slope IOPS (ss_bw)', alpha=0.4)
+ax1.set_xlabel(f'Time ({time_unit})', color='white')
+ax1.set_ylabel('IOPS', color='white')
+ax1.tick_params(axis='y', labelcolor='white')
+ax1.tick_params(axis='x', labelcolor='white')
+ax1.grid(True, color='gray')
+
+#    ax2.plot(df_bw_mean[f'Time ({time_unit})'], df_bw_mean['Mean Bandwidth (KB/s)'], 'o', markersize=0.5, color='red', label='Mean Bandwidth (KB/s) (ss_iops)', alpha=0.6)
+#    ax2.plot(df_bw_slope[f'Time ({time_unit})'], df_bw_slope['Slope Bandwidth (KB/s)'], '--', markersize=2, color=colors['light_green'], label='Slope Bandwidth (KB/s) (ss_iops)', alpha=0.4)
 
 # Instantiate a second y-axis to plot bandwidth
 ax2 = ax1.twinx()
-ax2.plot(df_bw_mean['Time (seconds)'], df_bw_mean['Mean Bandwidth (KB/s)'], 'b-', label='Mean Bandwidth (KB/s)')
-ax2.plot(df_bw_slope['Time (seconds)'], df_bw_slope['Slope Bandwidth (KB/s)'], 'b--', label='Slope Bandwidth (KB/s)')
-ax2.set_ylabel('Bandwidth (KB/s)', color='b')
-ax2.tick_params(axis='y', labelcolor='b')
+ax2.set_facecolor('black')  # Set the secondary y-axis background color to black
+if 'Mean Bandwidth (KB/s)' in df_bw_mean:
+    ax2.plot(df_bw_mean[f'Time ({time_unit})'], df_bw_mean['Mean Bandwidth (KB/s)'], 'x', markersize=1, color='blue', label='Mean Bandwidth (KB/s) (ss_iops)', alpha=0.6)
+if 'Slope Bandwidth (KB/s)' in df_bw_slope:
+    ax2.plot(df_bw_slope[f'Time ({time_unit})'], df_bw_slope['Slope Bandwidth (KB/s)'], 'x', markersize=0.5, color=colors['cyan'], label='Slope Bandwidth (KB/s) (ss_iops)', alpha=0.4)
+if 'Mean Bandwidth (KB/s) (BW)' in df_bw_mean:
+    ax2.plot(df_bw_mean[f'Time ({time_unit})'], df_bw_mean['Mean Bandwidth (KB/s) (BW)'], 'x', markersize=1, color=colors['grey'], label='Mean Bandwidth (KB/s) (ss_bw)', alpha=0.6)
+if 'Slope Bandwidth (KB/s) (BW)' in df_bw_slope:
+    ax2.plot(df_bw_slope[f'Time ({time_unit})'], df_bw_slope['Slope Bandwidth (KB/s) (BW)'], 'x', markersize=0.5, color='white', label='Slope Bandwidth (KB/s) (ss_bw)', alpha=0.4)
+ax2.set_ylabel('Bandwidth', color='white')
+ax2.tick_params(axis='y', labelcolor='white')
+ax2.yaxis.set_major_formatter(FuncFormatter(human_readable_bandwidth))
 
 # Add legends
-fig.tight_layout()
-fig.legend(loc='upper left', bbox_to_anchor=(0.1,0.9), bbox_transform=ax1.transAxes)
+fig.tight_layout(rect=[0, 0, 1, 1])  # Adjust the right margin to make more space for the legend
+fig.legend(loc='upper right', bbox_to_anchor=(0.85, 0.9), facecolor='black', edgecolor='black')
+legend = fig.legend(loc='upper right', bbox_to_anchor=(0.85, 0.9), facecolor='black', edgecolor='black', markerscale=8)
 
-plt.title('Steady-State IOPS and Bandwidth Over Time')
-plt.savefig('steady_state_iops.png')
-#plt.show()
+for text in legend.get_texts():
+     text.set_color('white')
+legend.get_frame().set_facecolor('black')
+fig.tight_layout(pad=2.0)  # Add padding to ensure the title is not cut off
 
+plt.title('Steady-State IOPS and Bandwidth Over Time', color='white')
+plt.savefig('steady_state_iops_bw.png', facecolor=fig.get_facecolor())
+plt.show()

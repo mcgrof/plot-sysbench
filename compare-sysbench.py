@@ -47,8 +47,8 @@ df2 = pd.DataFrame(tps_data_2, columns=[time_label, 'TPS'])
 # Plot the TPS values
 plt.figure(figsize=(30, 12))
 
-plt.plot(df2[time_label], df2['TPS'], 'ro', markersize=2, label='innodb_doublewrite=ON')
-plt.plot(df1[time_label], df1['TPS'], 'go', markersize=2, label='innodb_doublewrite=OFF')
+plt.plot(df1[time_label], df1['TPS'], 'ro', markersize=2, label='innodb_doublewrite=ON')
+plt.plot(df2[time_label], df2['TPS'], 'go', markersize=2, label='innodb_doublewrite=OFF')
 
 plt.title('Transactions Per Second (TPS) Over Time')
 plt.xlabel(time_label)

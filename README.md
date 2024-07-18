@@ -123,9 +123,54 @@ jq '.jobs[0].steadystate.data.iops,.jobs[0].steadystate.data.bw,.jobs[1].steadys
 240
 ```
 
+## json file sizes
+
+For a 6 hour run you can expect each json file to be about 1.5M - 2M.
+
 ## Plotting steady state
 
-There's a work in progress plot attempt of the steady state output files there.
+To plot steady state just run on a directory that has the above json output
+files, either both or just one:
+
+```bash
+./plot-fio-steady-state.py --title-prefix "DRIVE-1 - 6 Hour Random Write" \
+    --iops-max 100000  --bw-max 100.0GB/s
+```
+
+## Comparing steady-state of two drives
+
+There are two scripts with different focus on how they can highlight differences
+between drives achieved steady state. This is useful to compare results against
+two drives, or the same drive with different firmware.
+
+  * compare-ss.py: by default makes it clear that the first drive
+    is a different drive by using larger markers, the second drive
+    uses the smallest markers. Color hue can be modified as well for
+    the second drive, we use some sensible defaults to "off" the coloring
+    from the first drive. You can use color drift in values -255 to 255 for
+    modify the color drift in RGB for the second drive. You can also modify
+    the default marker sizes for each drive.
+
+  * compare-ss-animate.py: creates an animation to show the second drive
+    data first, followed by the first drive. The markers are the same size
+    so the only change is slightly the coloring as in the last script.
+    The differences are more clearly visible by displaying the data from
+    the first drive slightly later. This shares the same options as the
+    first script. A 6 hour drive steady state json output for both iops and
+    bandwidth will make this script output a gif output file of about 7M
+    in about less than one minute.
+
+Usage:
+
+```bash
+./compare-ss.py \
+        --dir1 DRIVE-1/ --dir2 DRIVE-2/ \
+        --iops-max 100000 \
+        --bw-max 10.0GB/s \
+        --title-prefix "DRIVE-1 Vs DRIVE-2- 2TB - 6 Hour Random Write"
+
+./compare-ss-animate.py <same-arguments-as-above>
+```
 
 License
 -------

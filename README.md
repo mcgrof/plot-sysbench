@@ -172,6 +172,56 @@ Usage:
 ./compare-ss-animate.py <same-arguments-as-above>
 ```
 
+## IU Tools
+
+### blkalgn
+
+One eBPF tools is provided to help evaluate block alignment.
+
+  * blkalgn     -- allows you to see a block device IOs counts and alignment
+  * plot-iu.py  -- lets you plot results
+
+#### Dependencies
+
+```bash
+apt-get install python3-bpfcc
+```
+
+#### Tools sources
+
+  * https://github.com/dagmcr/bcc.git
+  * branch:
+    * blkalgn
+
+#### Comparing IU workloads on two workloads
+
+```bash
+./plot-iu.py ext4.json xfs.json --legend1 ext4 --legend2 xfs
+```
+
+#### Running eBPF scripts inside a container
+
+You can run blkalgn inside a container, make sure /opt/root-iu/ is created
+and copy the iu-tools/* there. Then just use
+
+```bash
+docker run --rm --name blkalgn \
+    --volume=/opt/root-iu:/root/ \
+    --ulimit=memlock=-1:-1  \
+    --privileged  \
+    -v /lib/modules:/lib/modules:ro  \
+    -v /sys:/sys:ro \
+    -v /usr/src:/usr/src:ro  \
+    -it debian:testing /bin/bash
+```
+
+Inside the container you will then need to do:
+
+```
+apt-get update; apt-get install python3-bpfcc
+```
+
+
 License
 -------
 

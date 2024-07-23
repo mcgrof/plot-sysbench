@@ -46,6 +46,15 @@ We start plot at the first TPS value on the y axis.
 
 <img src="a_vs_b_zoomed_in.png" align=center alt="a Vs b TPS">
 
+## Plotting TPS
+
+
+You can compare TPS against two workloads:
+
+```bash
+./compare-sysbench.py tps-ext4-bigalloc-16k-24-tables-512-threads-v2.txt tps-xfs-16k-reflink.txt --legend1 "ext4 bigalloc 16k" --legend2 "xfs 16k reflink"
+```
+
 # Preconditioning
 
 There are two parts to pre-conditioning:

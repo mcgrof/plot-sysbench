@@ -40,6 +40,7 @@ def main():
     parser.add_argument('--legend2', type=str, default='innodb_doublewrite=OFF', help='Legend for the second file')
     parser.add_argument('--theme', type=str, default='dark_background', help='Matplotlib theme to use')
     parser.add_argument('--list-themes', action='store_true', help='List available matplotlib themes')
+    parser.add_argument('--report-interval', type=int, default=1, help='Time interval in seconds for reporting')
 
     args = parser.parse_args()
 
@@ -52,6 +53,10 @@ def main():
     # Read and parse both sysbench output files
     tps_data_1 = read_sysbench_output(args.file1)
     tps_data_2 = read_sysbench_output(args.file2)
+
+    # Adjust time intervals based on the report interval
+    tps_data_1 = [(time * args.report_interval, tps) for time, tps in tps_data_1]
+    tps_data_2 = [(time * args.report_interval, tps) for time, tps in tps_data_2]
 
     # Determine the maximum time value to decide if we need to use hours or seconds
     max_time_in_seconds = max(max(tps_data_1, key=lambda x: x[0])[0], max(tps_data_2, key=lambda x: x[0])[0])

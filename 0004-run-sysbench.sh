@@ -4,6 +4,7 @@ NAME=$1
 LOCAL_PORT=$2
 # 43200 seconds is 12 hours, use that when you're ready to run a long test
 TIME_SECONDS=$3
+THREADS=${5:-$(nproc)}
 
 docker run --network host \
 --rm \

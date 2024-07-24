@@ -23,7 +23,21 @@ default-authentication-plugin=mysql_native_password
 # on our own and test on our own:
 #
 # https://dev.mysql.com/doc/refman/8.0/en/innodb-dedicated-server.html
+#
+# Let us assume n1-standard-16 with 60GB RAM or AWS i4i.4xlarge with 128GB.
+# The recommended values seem very large in consideration for when we disable
+# innodb_doublewrite and use O_DIRECT, so likely could be adjusted. We strive
+# to provide generic configurations for these types of instances in this
+# example file for innodb_doublewrite=0.
+#
+# For systems with above 10 GiB RAM: 0.5625 * (RAM in GB)
+# n1-standard-16: 33.75G
+# i4i.4xlarge: 72G
 innodb_redo_log_capacity        = 1G
+
+# For systems with above 4 GiB RAM: 0.75 * (RAM in GB)
+# n1-standard-16: 45G
+# i4i.4xlarge: 96G
 innodb_buffer_pool_size         = 512M
 
 # Take advantage of NVMe AWUPF >= 4k

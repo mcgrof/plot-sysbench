@@ -132,10 +132,10 @@ def main():
         help="Legend for secondary JSON input file",
     )
     parser.add_argument(
-        "--color1", type=str, default="green", help="Color for primary JSON input file"
+        "--color1", type=str, default="orange", help="Color for primary JSON input file"
     )
     parser.add_argument(
-        "--color2", type=str, default="red", help="Color for secondary JSON input file"
+        "--color2", type=str, default="cyan", help="Color for secondary JSON input file"
     )
     parser.add_argument(
         "--list-themes", action="store_true", help="List available plot themes"

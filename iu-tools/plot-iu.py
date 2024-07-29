@@ -35,6 +35,8 @@ def plot_histograms(args):
     legend2 = args.legend2
     output_file = args.output
     theme = "dark_background"
+    color1 = args.color1
+    color2 = args.color2
     if args.theme:
         theme = args.theme
 
@@ -84,8 +86,8 @@ def plot_histograms(args):
             "Block Size Distribution",
             "Block Size",
             "Count",
-            "blue",
-            "green",
+            color1,
+            color2,
         )
 
     if "Algn size" in data1:
@@ -96,8 +98,8 @@ def plot_histograms(args):
             "Alignment Size Distribution",
             "Alignment Size",
             "Count",
-            "blue",
-            "green",
+            color1,
+            color2,
         )
 
     plt.tight_layout()
@@ -128,6 +130,12 @@ def main():
         type=str,
         default="JSON Input 2",
         help="Legend for secondary JSON input file",
+    )
+    parser.add_argument(
+        "--color1", type=str, default="green", help="Color for primary JSON input file"
+    )
+    parser.add_argument(
+        "--color2", type=str, default="red", help="Color for secondary JSON input file"
     )
     parser.add_argument(
         "--list-themes", action="store_true", help="List available plot themes"

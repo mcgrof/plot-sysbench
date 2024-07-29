@@ -25,7 +25,16 @@ def format_size(size):
     else:
         return f"{1 << (size - 30)}G"
 
-def plot_histograms(data1, data2, legend1, legend2, output_file, theme='dark_background'):
+def plot_histograms(args):
+    data1 = load_json_data(args.json_input1)
+    data2 = load_json_data(args.json_input2) if args.json_input2 else None
+    legend1 = args.legend1
+    legend2 = args.legend2
+    output_file = args.output
+    theme = 'dark_background'
+    if args.theme:
+        theme = args.theme
+
     plt.style.use(theme)
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7))
 
@@ -113,10 +122,8 @@ def main():
     if args.list_themes:
         print(plt.style.available)
         return
-    data1 = load_json_data(args.json_input1)
-    data2 = load_json_data(args.json_input2) if args.json_input2 else None
     
-    plot_histograms(data1, data2, args.legend1, args.legend2, args.output, args.theme)
+    plot_histograms(args)
 
 if __name__ == "__main__":
     main()

@@ -55,6 +55,25 @@ You can compare TPS against two workloads:
 ./compare-sysbench.py tps-ext4-bigalloc-16k-24-tables-512-threads-v2.txt tps-xfs-16k-reflink.txt --legend1 "ext4 bigalloc 16k" --legend2 "xfs 16k reflink"
 ```
 
+## Visualizing TPS variance
+
+Standard deviation tells us how far off from the mean a random TPS sample
+can be. However it is not easy to tell from this the scale out outliers.
+Variance is defined as the square of the standard deviation, this makes
+variance more sensitive to larger deviations. A few extremely high or
+low TPS values will significantly increase the variance.
+
+Even though variance is defined by the standard deviation it is also helpful
+to quantify and visualize variance. We provide plots to get a better sense
+of TPS standard deviation, and separately the variance. The lower the variance
+the more stable your TPS.
+
+```bash
+./plot-variance-tps.py \
+    tps-xfs-reflink.txt "xfs 16k innodb_doublewrite=off" \
+    tps-xfs-reflink-doublewrite.txt "xfs 16k innodb_doublewrite=ON"
+```
+
 # Preconditioning
 
 There are two parts to pre-conditioning:

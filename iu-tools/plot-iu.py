@@ -104,7 +104,8 @@ def plot_histograms(args):
 
     plt.tight_layout()
     plt.savefig(output_file)
-    plt.show()
+    if args.show:
+        plt.show()
 
 
 def main():
@@ -151,6 +152,11 @@ def main():
         type=str,
         default="iu-alignment.png",
         help="Output file name (default: iu-alignment.png)",
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Show plots",
     )
     args = parser.parse_args()
     if args.list_themes:

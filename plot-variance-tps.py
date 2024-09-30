@@ -47,7 +47,8 @@ def plot_histograms(tps_values1, tps_values2, args):
     plt.legend(loc='best')
     plt.grid(True)
     plt.savefig(f'{prefix}histogram.png')
-    plt.show()
+    if args.show:
+        plt.show()
 
 def plot_box_plots(tps_values1, tps_values2, args):
     legend1, legend2, color1, color2, prefix = get_plot_args(args)
@@ -68,7 +69,8 @@ def plot_box_plots(tps_values1, tps_values2, args):
     plt.ylabel('Transactions Per Second (TPS)')
     plt.grid(True)
     plt.savefig(f'{prefix}box_plot.png')
-    plt.show()
+    if args.show:
+        plt.show()
 
 def plot_density_plots(tps_values1, tps_values2, args):
     legend1, legend2, color1, color2, prefix = get_plot_args(args)
@@ -83,7 +85,8 @@ def plot_density_plots(tps_values1, tps_values2, args):
     plt.legend(loc='best')
     plt.grid(True)
     plt.savefig(f'{prefix}density_plot.png')
-    plt.show()
+    if args.show:
+        plt.show()
 
 def plot_combined_hist_density(tps_values1, tps_values2, args):
     legend1, legend2, color1, color2, prefix = get_plot_args(args)
@@ -115,7 +118,8 @@ def plot_combined_hist_density(tps_values1, tps_values2, args):
     plt.legend(loc='best')
     plt.grid(True)
     plt.savefig(f'{prefix}combined_hist_density.png')
-    plt.show()
+    if args.show:
+        plt.show()
 
 def plot_bell_curve(tps_values1, tps_values2, args):
     legend1, legend2, color1, color2, prefix = get_plot_args(args)
@@ -136,7 +140,8 @@ def plot_bell_curve(tps_values1, tps_values2, args):
     plt.legend(loc='best')
     plt.grid(True)
     plt.savefig(f'{prefix}bell_curve.png')
-    plt.show()
+    if args.show:
+        plt.show()
 
 def plot_combined_hist_bell_curve(tps_values1, tps_values2, args):
     legend1, legend2, color1, color2, prefix = get_plot_args(args)
@@ -174,7 +179,8 @@ def plot_combined_hist_bell_curve(tps_values1, tps_values2, args):
 
     plt.title('Combined Histogram and Bell Curve of TPS Values')
     plt.savefig(f'{prefix}combined_hist_bell_curve.png')
-    plt.show()
+    if args.show:
+        plt.show()
 
 def plot_variance_bars(variance1, variance2, args):
     legend1, legend2, color1, color2, prefix = get_plot_args(args)
@@ -206,7 +212,8 @@ def plot_variance_bars(variance1, variance2, args):
         plt.plot(bar.get_x() + bar.get_width() / 2, variance, 'o', color='black')
 
     plt.savefig(f'{prefix}variance_bar.png')
-    plt.show()
+    if args.show:
+        plt.show()
 
 def plot_outliers(tps_values1, tps_values2, args):
     legend1, legend2, color1, color2, prefix = get_plot_args(args)
@@ -241,7 +248,8 @@ def plot_outliers(tps_values1, tps_values2, args):
     plt.ylabel('Transactions Per Second (TPS)')
     plt.grid(True)
     plt.savefig(f'{prefix}outliers_plot.png')
-    plt.show()
+    if args.show:
+        plt.show()
 
 def main():
     parser = argparse.ArgumentParser(description='Analyze and compare TPS values from sysbench output files.')
@@ -252,6 +260,7 @@ def main():
     parser.add_argument('--color1', default='cyan', help='Color for the first dataset (default: cyan)')
     parser.add_argument('--color2', default='orange', help='Color for the second dataset (default: orange)')
     parser.add_argument('--prefix', default='', help='Output filename prefix')
+    parser.add_argument("--show", action="store_true", help="Show plots")
 
     args = parser.parse_args()
 

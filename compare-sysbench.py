@@ -42,6 +42,7 @@ def main():
     parser.add_argument('--theme', type=str, default='dark_background', help='Matplotlib theme to use')
     parser.add_argument('--list-themes', action='store_true', help='List available matplotlib themes')
     parser.add_argument('--report-interval', type=int, default=1, help='Time interval in seconds for reporting')
+    parser.add_argument("--show", action="store_true", help="Show plots")
 
     args = parser.parse_args()
 
@@ -110,6 +111,8 @@ def main():
     plt.legend()
     plt.tight_layout()
     plt.savefig(args.output)
+    if args.show:
+        plt.show()
 
 if __name__ == '__main__':
     main()
